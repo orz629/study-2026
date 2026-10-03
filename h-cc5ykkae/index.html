@@ -36,6 +36,10 @@
          user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
   .img.zoom { width: 250%; max-width: none; cursor: zoom-out; }
   a.mail { color: var(--accent); font-weight: 600; }
+  .small-btn { padding: 4px 12px; font-size: .9rem; }
+  dialog { border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--text);
+           padding: 18px; max-width: min(680px, 92vw); max-height: 86vh; overflow: auto; }
+  dialog::backdrop { background: rgba(0, 0, 0, .5); }
   .lbl { display: flex; justify-content: space-between; font-size: .85rem; color: var(--muted); margin: 4px 2px 0; }
   .opts { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
   .opt { display: flex; gap: 8px; align-items: center; padding: 9px 10px; border: 1px solid var(--line);
@@ -58,18 +62,27 @@
   <!-- 開始畫面 -->
   <section id="start" class="card">
     <h1>DLR Grad-CAM 熱區位置盲評</h1>
-    <p>每題左邊是下顎 RA 根尖片原圖，右邊是 AI 模型判斷「遠舌根（DLR）」時的 Grad-CAM 熱區（紅色為模型最關注處）。
-       請判斷<strong>熱區最強的位置</strong>，以及熱區是否涵蓋<strong>第一大臼齒的根分叉區</strong>。</p>
-    <p>題目已隨機排序並盲化：畫面不會顯示真實診斷、模型判讀或其他醫師的判讀，請僅依熱區位置作答，不需判斷有無 DLR。</p>
-    <h2>位置定義</h2>
-    <ul>
-      <li><b>根分叉／根間區</b>：第一大臼齒近心根與遠心根之間（含可能的第三根影像）</li>
-      <li><b>Distal furcation arrow 區</b>：遠心側根分叉處的三角形透射影像位置</li>
-      <li><b>遠心根／近心根</b>：熱區主要落在該牙根本身</li>
-      <li><b>牙冠</b>：無修復物的牙冠；<b>修復物</b>：填補物、牙冠套等高密度修復</li>
-      <li><b>鄰牙</b>：熱區主要在第一大臼齒以外的牙齒</li>
-    </ul>
-    <p>進度會自動儲存在這個瀏覽器；中途關閉後，用同一台裝置、同一個名字重新開啟即可繼續。評完請把結果傳送至 <a class="mail" href="mailto:orz629@gmail.com">orz629@gmail.com</a>（完成畫面有「用 Email 寄出」按鈕）。</p>
+    <div id="guide">
+      <p>感謝您協助這項研究。每題左邊是下顎 RA 根尖片原圖，右邊是 AI 模型判斷「遠舌根（DLR）」時的 Grad-CAM 熱區（<b>紅色為模型最關注處</b>）。
+         請判斷<strong>熱區最強的位置</strong>，以及熱區是否涵蓋<strong>第一大臼齒的根分叉區</strong>。</p>
+      <ul>
+        <li><b>題數與時間</b>：共 83 題，只需做 1 次，約 15–30 分鐘。手機或電腦都可以，電腦或平板看得最清楚。</li>
+        <li><b>只判斷熱區位置</b>，不需判斷有無 DLR。題目已隨機排序並盲化，畫面不會顯示真實診斷、模型判讀或其他醫師的判讀。</li>
+        <li><b>放大影像</b>：在影像上<strong>點兩下</strong>可放大，放大後可拖曳移動，再點兩下恢復。</li>
+        <li><b>進度</b>：會自動儲存在這個瀏覽器，可中途離開，之後用同一台裝置、同一個代號回來繼續。</li>
+        <li><b>請獨立作答</b>，不要與他人討論。</li>
+        <li><b>傳回結果</b>：完成後請按完成畫面的「用 Email 寄出」，把結果寄到 <a class="mail" href="mailto:orz629@gmail.com">orz629@gmail.com</a>。</li>
+      </ul>
+      <h2>位置定義</h2>
+      <ul>
+        <li><b>根分叉／根間區</b>：第一大臼齒近心根與遠心根之間（含可能的第三根影像）</li>
+        <li><b>Distal furcation arrow 區</b>：遠心側根分叉處的三角形透射影像位置</li>
+        <li><b>遠心根／近心根</b>：熱區主要落在該牙根本身</li>
+        <li><b>牙冠</b>：無修復物的牙冠；<b>修復物</b>：填補物、牙冠套等高密度修復</li>
+        <li><b>鄰牙</b>：熱區主要在第一大臼齒以外的牙齒</li>
+        <li><b>熱區橫跨兩個位置</b>：選最紅、最集中的位置，另一個位置寫在備註</li>
+      </ul>
+    </div>
     <label for="rater"><b>評分者代號</b>（例如姓名縮寫）</label>
     <div class="row" style="margin-top:6px">
       <input id="rater" type="text" class="grow" placeholder="例：ABC" autocomplete="off">
@@ -84,6 +97,7 @@
       <div class="row">
         <b id="qTitle" class="grow"></b>
         <span id="qCount"></span>
+        <button id="helpBtn" class="small-btn">說明</button>
       </div>
       <div class="bar" style="margin-top:8px"><div id="bar"></div></div>
     </div>
@@ -126,6 +140,12 @@
     <p style="font-size:.85rem">「用 Email 寄出」會開啟郵件並填好收件人與結果內容，直接按傳送即可；若沒有反應，請按「匯出 CSV」後把檔案寄到上面的信箱。</p>
   </section>
 </div>
+
+<dialog id="help">
+  <h2>作答說明</h2>
+  <div id="helpBody"></div>
+  <div class="row" style="justify-content:flex-end"><button id="helpClose" class="primary">關閉，繼續作答</button></div>
+</dialog>
 
 <script>
 const EMAIL = 'orz629@gmail.com';
@@ -320,6 +340,16 @@ function setupZoom(im) {
   }, { passive: false });
 }
 setupZoom(document.getElementById('img'));
+// 作答中的「說明」:內容與開始畫面相同(單一來源)
+document.getElementById('helpBody').innerHTML = document.getElementById('guide').innerHTML;
+document.getElementById('helpBtn').addEventListener('click', () => {
+  const d = document.getElementById('help');
+  if (d.showModal) d.showModal(); else d.setAttribute('open', '');
+});
+document.getElementById('helpClose').addEventListener('click', () => {
+  const d = document.getElementById('help');
+  if (d.close) d.close(); else d.removeAttribute('open');
+});
 
 // 以 Email 寄出:收件人、主旨與結果備份都先填好(mailto 無法附加檔案,所以把結果以精簡格式放在內文)
 // 精簡格式:題號=位置代碼(LOC 的順序 0–9)+ 涵蓋(y / p / n);有備註的題目另列
@@ -340,7 +370,8 @@ function buildMailHref() {
 }
 document.getElementById('mail').addEventListener('click', mailResults);
 document.addEventListener('keydown', e => {
-  if (document.getElementById('quiz').classList.contains('hidden') || e.target.tagName === 'TEXTAREA') return;
+  if (document.getElementById('quiz').classList.contains('hidden') || e.target.tagName === 'TEXTAREA'
+      || document.getElementById('help').open) return;
   const locKeys = '1234567890';
   if (locKeys.includes(e.key)) { const r = document.querySelectorAll('input[name=loc]')[locKeys.indexOf(e.key)]; if (r) { r.checked = true; save(); refreshChips(); } }
   const covKeys = { q: 0, w: 1, e: 2 };

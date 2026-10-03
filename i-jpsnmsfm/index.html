@@ -35,6 +35,10 @@
          -webkit-touch-callout: none; }
   .img.zoom { width: 250%; max-width: none; cursor: zoom-out; }
   a.mail { color: var(--accent); font-weight: 600; }
+  .small-btn { padding: 4px 12px; font-size: .9rem; }
+  dialog { border: 1px solid var(--line); border-radius: 12px; background: var(--card); color: var(--text);
+           padding: 18px; max-width: min(640px, 92vw); max-height: 86vh; overflow: auto; }
+  dialog::backdrop { background: rgba(0, 0, 0, .5); }
   .answers { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .ans { font-size: 1.25rem; font-weight: 600; padding: 18px 10px; border-radius: 10px; }
   .ans.on { background: var(--chip-on); border-color: var(--accent); outline: 2px solid var(--accent); }
@@ -57,14 +61,19 @@
 
   <section id="start" class="card">
     <h1>下顎第一大臼齒遠舌根（DLR）判讀</h1>
-    <p>每題是一張根尖片（RA 或 MS 角度），請判斷影像中的<strong>下顎第一大臼齒是否有遠舌根（DLR）</strong>。
-       每張影像獨立判斷即可，題目順序已隨機排列。</p>
-    <ul>
-      <li>本工具需在<strong>間隔至少一週</strong>的兩個時間點各完成一次（第 1 次、第 2 次），兩次題目相同、順序不同。</li>
-      <li>請獨立作答，不要與他人討論，也不要記錄或回顧自己第 1 次的答案。</li>
-      <li>作答不會顯示正確答案。進度會自動儲存在這個瀏覽器，可中途離開再回來繼續。</li>
-      <li>每次完成後，請把結果檔傳送至 <a class="mail" href="mailto:orz629@gmail.com">orz629@gmail.com</a>（完成畫面有「用 Email 寄出」按鈕）。</li>
-    </ul>
+    <div id="guide">
+      <p>感謝您協助這項研究。每題是一張根尖片（RA 或 MS 角度），請判斷影像中的<strong>下顎第一大臼齒是否有遠舌根（DLR）</strong>。
+         每張影像獨立判斷即可，題目順序已隨機排列。</p>
+      <ul>
+        <li><b>題數與時間</b>：共 100 題，每次約 15–25 分鐘。手機或電腦都可以作答。</li>
+        <li><b>共做 2 次</b>：請在<strong>間隔至少一週</strong>的兩個時間點各完成一次（第 1 次、第 2 次），兩次題目相同、順序不同；請用同一台裝置、同一個瀏覽器與相同的代號。</li>
+        <li><b>作答</b>：點「有 DLR」或「無 DLR」，會自動跳到下一題；按「上一題」可以修改。作答不會顯示正確答案。</li>
+        <li><b>放大影像</b>：在 X 光片上<strong>點兩下</strong>可放大，放大後可拖曳移動，再點兩下恢復。</li>
+        <li><b>進度</b>：會自動儲存在這個瀏覽器，可中途離開，之後用同一個代號回來繼續。</li>
+        <li><b>請獨立作答</b>，不要與他人討論，也不要記錄或回顧自己第 1 次的答案。</li>
+        <li><b>傳回結果</b>：每次完成後，請按完成畫面的「用 Email 寄出」，把結果寄到 <a class="mail" href="mailto:orz629@gmail.com">orz629@gmail.com</a>（兩次共寄 2 封）。</li>
+      </ul>
+    </div>
     <label for="rater"><b>評分者代號</b>（兩次請使用相同代號）</label>
     <input id="rater" type="text" placeholder="例：ABC" autocomplete="off" style="margin-top:6px">
     <div style="margin-top:12px"><b>這是第幾次判讀？</b></div>
@@ -78,7 +87,7 @@
 
   <section id="quiz" class="hidden">
     <div class="card">
-      <div class="row"><b id="qTitle" class="grow"></b><span id="qCount"></span></div>
+      <div class="row"><b id="qTitle" class="grow"></b><span id="qCount"></span><button id="helpBtn" class="small-btn">說明</button></div>
       <div class="bar" style="margin-top:8px"><div id="bar"></div></div>
     </div>
     <div class="card">
@@ -114,6 +123,12 @@
     <p class="small">「用 Email 寄出」會開啟郵件並填好收件人與結果內容，直接按傳送即可；若沒有反應，請按「匯出 CSV」後把檔案寄到上面的信箱。</p>
   </section>
 </div>
+
+<dialog id="help">
+  <h2>作答說明</h2>
+  <div id="helpBody"></div>
+  <div class="row" style="justify-content:flex-end"><button id="helpClose" class="primary">關閉，繼續作答</button></div>
+</dialog>
 
 <script>
 const EMAIL = 'orz629@gmail.com';
@@ -298,9 +313,19 @@ document.getElementById('back').addEventListener('click', () => {
   document.getElementById('quiz').classList.remove('hidden'); show();
 });
 setupZoom(document.getElementById('img'));
+// 作答中的「說明」:內容與開始畫面相同(單一來源)
+document.getElementById('helpBody').innerHTML = document.getElementById('guide').innerHTML;
+document.getElementById('helpBtn').addEventListener('click', () => {
+  const d = document.getElementById('help');
+  if (d.showModal) d.showModal(); else d.setAttribute('open', '');
+});
+document.getElementById('helpClose').addEventListener('click', () => {
+  const d = document.getElementById('help');
+  if (d.close) d.close(); else d.removeAttribute('open');
+});
 document.getElementById('mail').addEventListener('click', mailResults);
 document.addEventListener('keydown', e => {
-  if (document.getElementById('quiz').classList.contains('hidden')) return;
+  if (document.getElementById('quiz').classList.contains('hidden') || document.getElementById('help').open) return;
   const k = e.key.toLowerCase();
   if (k === 'd') answer('DLR');
   if (k === 'n') answer('NDL');
